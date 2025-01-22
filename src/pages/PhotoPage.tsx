@@ -145,7 +145,7 @@ const PhotoPage = () => {
                   Home
                 </button>
                 <button
-                  onClick={() => {setPhoto(null);}}
+                  onClick={() => {setPhoto(null);window.location.reload();}}
                   className="flex items-center gap-4 px-8 py-6 bg-white bg-opacity-20 rounded-lg text-white text-xl font-semibold hover:bg-opacity-30 transition-all duration-300"
                 >
                   <RefreshCcw className="w-6 h-6" />

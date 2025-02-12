@@ -13,9 +13,29 @@ const PhotoPage = () => {
 
   // Request access to the webcam
   useEffect(() => {
+
+
+    const lockOrientation = async () => {
+      const orientation = screen.orientation as any; // Type assertion to fix TypeScript error
+      if (orientation && orientation.lock) {
+        try {
+          await orientation.lock("portrait");
+        } catch (err) {
+          console.warn("Orientation lock failed:", err);
+        }
+      }
+    };
+  
+    lockOrientation();
     const startVideoStream = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },  // Wider resolution for landscape
+            height: { ideal: 720 },  // Maintain aspect ratio
+            aspectRatio: 16/9,     // Enforce landscape aspect ratio
+          }
+        });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -69,7 +89,7 @@ const PhotoPage = () => {
   const email = async (img: string | null, send_to: string) => {
     const body = { data: img, send_to: send_to };
     try {
-      const response = await axios.post(`https://udaanapi.zetrance.com/email`, body);
+      const response = await axios.post(`http://udaanapi.zetrance.com/email`, body);
       return response.status === 200;
     } catch (error) {
       console.error('Error sending email:', error);
@@ -142,7 +162,7 @@ const PhotoPage = () => {
                   className="flex items-center gap-4 px-8 py-6 bg-white bg-opacity-20 rounded-lg text-white text-xl font-semibold hover:bg-opacity-30 transition-all duration-300"
                 >
                   <Home className="w-6 h-6" />
-                  Home
+                  
                 </button>
                 <button
                   onClick={() => {setPhoto(null);window.location.reload();}}
@@ -158,13 +178,6 @@ const PhotoPage = () => {
                   <Mail className="w-6 h-6" />
                   Send Email
                 </button>
-                <button
-                  onClick={(e)=>{navigate('/')}}
-                    type="submit"
-                    className="w-full px-12 py-6 bg-white bg-opacity-20 rounded-lg text-white text-3xl font-semibold hover:bg-opacity-30 transition-all duration-300"
-                  >
-                    Home
-                  </button>
               </div>
             </div>
           )}

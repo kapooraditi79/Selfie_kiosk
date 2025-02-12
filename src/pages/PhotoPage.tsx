@@ -13,9 +13,29 @@ const PhotoPage = () => {
 
   // Request access to the webcam
   useEffect(() => {
+
+
+    const lockOrientation = async () => {
+      const orientation = screen.orientation as any; // Type assertion to fix TypeScript error
+      if (orientation && orientation.lock) {
+        try {
+          await orientation.lock("portrait");
+        } catch (err) {
+          console.warn("Orientation lock failed:", err);
+        }
+      }
+    };
+  
+    lockOrientation();
     const startVideoStream = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },  // Wider resolution for landscape
+            height: { ideal: 720 },  // Maintain aspect ratio
+            aspectRatio: 16/9,     // Enforce landscape aspect ratio
+          }
+        });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -142,10 +162,10 @@ const PhotoPage = () => {
                   className="flex items-center gap-4 px-8 py-6 bg-white bg-opacity-20 rounded-lg text-white text-xl font-semibold hover:bg-opacity-30 transition-all duration-300"
                 >
                   <Home className="w-6 h-6" />
-                  Home
+                  
                 </button>
                 <button
-                  onClick={() => setPhoto(null)}
+                  onClick={() => {setPhoto(null);window.location.reload();}}
                   className="flex items-center gap-4 px-8 py-6 bg-white bg-opacity-20 rounded-lg text-white text-xl font-semibold hover:bg-opacity-30 transition-all duration-300"
                 >
                   <RefreshCcw className="w-6 h-6" />

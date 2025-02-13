@@ -173,7 +173,7 @@ const PhotoPage = () => {
     style={{
       maxHeight: '70vh', // Ensures it doesn't exceed the viewport height
       objectFit: 'contain', // Maintains aspect ratio and fits within container
-       // Rotates the image
+       transform: 'rotate(-90deg)'// Rotates the image
       width: 'auto', // Ensures the width is adjusted automatically after rotation
       height: '100%', // Makes the height fit the container while maintaining aspect ratio
     }}

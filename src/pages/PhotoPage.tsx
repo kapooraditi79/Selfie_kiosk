@@ -77,14 +77,29 @@ const PhotoPage = () => {
       const context = canvas.getContext('2d');
       
       if (context) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Swap width and height
+        canvas.width = video.videoHeight;
+        canvas.height = video.videoWidth;
+        
+        // Rotate and capture
+        context.save();
+        context.translate(canvas.width/2, canvas.height/2);
+        context.rotate(90 * Math.PI/180);
+        context.drawImage(
+          video,
+          -video.videoWidth/2,
+          -video.videoHeight/2,
+          video.videoWidth,
+          video.videoHeight
+        );
+        context.restore();
+        
         const imageSrc = canvas.toDataURL('image/jpeg');
         setPhoto(imageSrc);
       }
     }
   }, []);
+
 
   const email = async (img: string | null, send_to: string) => {
     const body = { data: img, send_to: send_to };
@@ -117,14 +132,18 @@ const PhotoPage = () => {
       <div className="container mx-auto px-4 w-full h-full flex flex-col justify-center items-center">
         <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl p-8 shadow-xl max-w-3xl w-full">
           {!photo ? (
-            <div className="space-y-6 flex flex-col items-center justify-center">
+            <div className="space-y-6 flex flex-col items-center justify-center " >
               <div className="relative w-full">
                 <video
                   ref={videoRef}
                   autoPlay
                   muted
-                  className="w-full rounded-lg"
-                  style={{ maxHeight: '60vh', objectFit: 'cover' }}
+                  className="w-full rounded-lg "
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'cover',
+                  }}
                 />
                 {countdown && (
                   <div className="absolute inset-0 flex items-center justify-center">

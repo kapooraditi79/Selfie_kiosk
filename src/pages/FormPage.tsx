@@ -76,9 +76,17 @@ const FormPage = () => {
             <input
               {...register('phone', {
                 required: 'Phone number is required',
-                pattern: {
-                  value: /^\+?[\d\s-]+$/,
-                  message: 'Invalid phone number'
+                validate: {
+                  validLength: (value) => {
+                    // Remove all non-digit characters
+                    const digitsOnly = value.replace(/\D/g, '');
+                    return digitsOnly.length === 10 || 'Phone number must be 10 digits';
+                  },
+                  validFormat: (value) => {
+                    // Check if it matches a valid phone format after cleaning
+                    const cleaned = value.replace(/\D/g, '');
+                    return /^\d{10}$/.test(cleaned) || 'Invalid phone number format';
+                  }
                 }
               })}
               placeholder="Phone Number"

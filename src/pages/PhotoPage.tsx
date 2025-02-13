@@ -11,6 +11,8 @@ const PhotoPage = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const navigate = useNavigate();
 
+  
+
   // Request access to the webcam
   useEffect(() => {
     const startVideoStream = async () => {
@@ -45,6 +47,9 @@ const PhotoPage = () => {
     startVideoStream();
   }, []);
 
+
+  
+
   const startCountdown = () => {
     setCountdown(5);
     const timer = setInterval(() => {
@@ -58,6 +63,8 @@ const PhotoPage = () => {
       });
     }, 1000);
   };
+
+  
 
   const capture = useCallback(() => {
     if (canvasRef.current && videoRef.current) {

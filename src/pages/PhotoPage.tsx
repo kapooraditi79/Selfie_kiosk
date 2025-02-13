@@ -13,47 +13,36 @@ const PhotoPage = () => {
 
   // Request access to the webcam
   useEffect(() => {
-
-
-    const lockOrientation = async () => {
-      const orientation = screen.orientation as any; // Type assertion to fix TypeScript error
-      if (orientation && orientation.lock) {
-        try {
-          await orientation.lock("portrait");
-        } catch (err) {
-          console.warn("Orientation lock failed:", err);
-        }
-      }
-    };
-  
-    lockOrientation();
     const startVideoStream = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            width: { ideal: 1280 },  // Wider resolution for landscape
-            height: { ideal: 720 },  // Maintain aspect ratio
-            aspectRatio: 16/9,     // Enforce landscape aspect ratio
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+            facingMode: "user",
+            // Try to force portrait orientation
+            aspectRatio: 9/16
           }
         });
+        
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          
+          // Add orientation change listener
+          videoRef.current.addEventListener('loadedmetadata', () => {
+            // Force vertical orientation if needed
+            if (videoRef.current) {
+              // videoRef.current.style.transform = 'rotate(90deg)';
+            }
+          });
         }
       } catch (err) {
         console.error('Error accessing webcam:', err);
         toast.error('Failed to access webcam');
       }
     };
-
+  
     startVideoStream();
-
-    return () => {
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-      }
-    };
   }, []);
 
   const startCountdown = () => {
@@ -77,22 +66,20 @@ const PhotoPage = () => {
       const context = canvas.getContext('2d');
       
       if (context) {
-        // Swap width and height
-        canvas.width = video.videoHeight;
-        canvas.height = video.videoWidth;
+        // Determine orientation
+        const isPortrait = window.innerHeight > window.innerWidth;
         
-        // Rotate and capture
-        context.save();
-        context.translate(canvas.width/2, canvas.height/2);
-        context.rotate(90 * Math.PI/180);
-        context.drawImage(
-          video,
-          -video.videoWidth/2,
-          -video.videoHeight/2,
-          video.videoWidth,
-          video.videoHeight
-        );
-        context.restore();
+        if (isPortrait) {
+          canvas.width = video.videoHeight;
+          canvas.height = video.videoWidth;
+          context.translate(canvas.width, 0);
+          context.rotate(90 * Math.PI / 180);
+        } else {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+        
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         
         const imageSrc = canvas.toDataURL('image/jpeg');
         setPhoto(imageSrc);
@@ -133,28 +120,30 @@ const PhotoPage = () => {
         <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl p-8 shadow-xl max-w-3xl w-full">
           {!photo ? (
             <div className="space-y-6 flex flex-col items-center justify-center " >
-              <div className="relative w-full">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  className="w-full rounded-lg "
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-                {countdown && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center">
-                      <div className="text-6xl text-white font-bold animate-pulse">
-                        {countdown}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <div className="relative w-full h-[70vh] flex items-center justify-center">
+  <video
+    ref={videoRef}
+    autoPlay
+    muted
+    className="w-full rounded-lg absolute"
+    style={{
+      maxWidth: '100%',
+      maxHeight: '70vh',
+      objectFit: 'cover',
+      transform: 'scaleX(1)',
+      transformOrigin: 'center',
+    }}
+  />
+  {countdown && (
+    <div className="absolute inset-0 flex items-center justify-center z-10">
+      <div className="w-32 h-32 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center">
+        <div className="text-6xl text-white font-bold animate-pulse">
+          {countdown}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
               <div className="flex justify-center w-full">
                 {!countdown && (
                   <button
@@ -168,13 +157,21 @@ const PhotoPage = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-6 flex flex-col items-center justify-center">
-              <img
-                src={photo}
-                alt="Captured"
-                className="w-full max-w-3xl rounded-lg shadow-lg"
-                style={{ maxHeight: '70vh', objectFit: 'cover' }}
-              />
+<div className="space-y-6 flex flex-col items-center justify-center overflow-hidden">
+  <div className='overflow-hidden'>
+<img
+    src={photo}
+    alt="Captured"
+    className="w-full max-w-3xl rounded-lg shadow-lg"
+    style={{
+      maxHeight: '70vh', // Ensures it doesn't exceed the viewport height
+      objectFit: 'contain', // Maintains aspect ratio and fits within container
+      transform: 'rotate(-90deg)', // Rotates the image
+      width: 'auto', // Ensures the width is adjusted automatically after rotation
+      height: '100%', // Makes the height fit the container while maintaining aspect ratio
+    }}
+  />
+  </div>
               <div className="flex justify-center gap-8">
                 <button
                   onClick={() => navigate('/')}

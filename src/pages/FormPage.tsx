@@ -116,13 +116,13 @@ const FormPage = () => {
           >
             Take Photo
           </button>
-          <button
+          {/* <button
           onClick={(e)=>{navigate('/')}}
             type="submit"
             className="w-full px-12 py-6 bg-white bg-opacity-20 rounded-lg text-white text-3xl font-semibold hover:bg-opacity-30 transition-all duration-300"
           >
             Home
-          </button>
+          </button> */}
         </form>
       </div>
     </div>
